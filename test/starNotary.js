@@ -15,10 +15,39 @@ contract('StarNotary', async (accs) => {
     owner = accounts[0]; // Assigning the owner test account
 });
 
-it('has correct name', async() => {
+it('has correct name', async () => {
     //One difference is that you can't declare a global instance variable of the contract, you will need to create an instance in each test case.
     let instance = await StarNotary.deployed(); // Making sure the Smart Contract is deployed and getting the instance.
-   
     let starName = await instance.starName.call(); // Calling the starName property
+    
     assert.equal(starName, "Awesome Udacity Star"); // Assert if the starName property was initialized correctly
+})
+
+it('can be claimed', async () => {
+    let instance = await StarNotary.deployed(); // Making sure the Smart Contract is deployed and getting the instance.
+    await instance.claimStar({from: owner});
+    let starOwner = await instance.starOwner.call(); // Getting the owner address
+    
+    assert.equal(starOwner, owner); // Verifying if the owner address match with owner of the address
+})
+
+it('can change owners', async () => {
+    let instance = await StarNotary.deployed();
+    let secondUser = accounts[1];
+    await instance.claimStar({from: owner});
+    let starOwner = await instance.starOwner.call();
+    assert.equal(starOwner, owner);
+    await instance.claimStar({from: secondUser});
+    let secondOwner = await instance.starOwner.call();
+    assert.equal(secondOwner, secondUser);
+})
+
+it('can change name', async () => {
+    let instance = await StarNotary.deployed();
+    let updatedName = "Updated Star";
+    await instance.claimStar({from: owner});
+    await instance.changeName(updatedName, {from: owner})
+    let starName = await instance.starName.call();
+
+    assert.equal(starName, updatedName)
 })
